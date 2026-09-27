@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "MESSA",
+    "slug": "messa",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/generated/icon.png",
+    "scheme": "messa",
+    "userInterfaceStyle": "light",
+    "primaryColor": "#4F46E5",
+    "android": {
+      "package": "me.messa.app",
+      "versionCode": 1,
+      "predictiveBackGestureEnabled": false,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/generated/adaptive-icon.png",
+        "backgroundColor": "#4F46E5"
+      },
+      "permissions": [
+        "android.permission.SEND_SMS",
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.READ_PHONE_NUMBERS",
+        "android.permission.INTERNET"
+      ]
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F8FAFC",
+          "image": "./assets/generated/splash-icon.png",
+          "imageWidth": 120
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
