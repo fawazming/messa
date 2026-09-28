@@ -3,6 +3,8 @@ import { create } from 'zustand';
 import { loadDataset, saveDataset } from '@/db/database';
 import { SheetError, buildRecipients, fetchSheetJson } from '@/services/sheetService';
 import { useAppStore } from '@/store/appStore';
+import { createId } from '@/utils/id';
+import { normalizePhone } from '@/utils/phone';
 import type { DatasetMeta, Recipient } from '@/types';
 
 type DataError = {
@@ -30,7 +32,28 @@ type DataState = {
   clearSelection: () => void;
   filteredRecipients: () => Recipient[];
   selectedRecipients: () => Recipient[];
+  addRecipient: (payload: Record<string, string>) => Promise<Recipient>;
+  updateRecipient: (id: string, payload: Record<string, string>) => Promise<void>;
+  removeRecipient: (id: string) => Promise<void>;
 };
+
+function recipientFromPayload(
+  payload: Record<string, string>,
+  fieldMap: { id: string; name: string; phone: string },
+  index: number
+): Recipient {
+  const phoneRaw = (fieldMap.phone && payload[fieldMap.phone]) || payload.phone || payload.phone_number || '';
+  const name = (fieldMap.name && payload[fieldMap.name]) || payload.name || '';
+  const remoteId = (fieldMap.id && payload[fieldMap.id]) || '';
+  return {
+    id: createId('r'),
+    remoteId: remoteId || String(index + 1),
+    name,
+    phone: normalizePhone(phoneRaw),
+    phoneRaw,
+    payload,
+  };
+}
 
 function matchesQuery(recipient: Recipient, query: string): boolean {
   if (!query) return true;
@@ -167,5 +190,42 @@ export const useDataStore = create<DataState>((set, get) => ({
   selectedRecipients: () => {
     const { recipients, selectedIds } = get();
     return recipients.filter((recipient) => selectedIds.has(recipient.id));
+  },
+
+  addRecipient: async (payload) => {
+    const { recipients, meta } = get();
+    const fieldMap = useAppStore.getState().fieldMap;
+    const recipient = recipientFromPayload(payload, fieldMap, recipients.length);
+    const next = [recipient, ...recipients];
+    const nextFields = Array.from(
+      new Set([...(meta?.fields ?? []), ...Object.keys(payload)])
+    );
+    const nextMeta = meta
+      ? { ...meta, recordCount: next.length, fields: nextFields, lastSyncedAt: meta.lastSyncedAt }
+      : meta;
+    set({ recipients: next, meta: nextMeta, fields: nextFields });
+    if (nextMeta) await saveDataset(nextMeta, next);
+    return recipient;
+  },
+
+  updateRecipient: async (id, payload) => {
+    const { recipients, meta } = get();
+    const fieldMap = useAppStore.getState().fieldMap;
+    const next = recipients.map((recipient) => {
+      if (recipient.id !== id) return recipient;
+      const rebuilt = recipientFromPayload(payload, fieldMap, 0);
+      return { ...recipient, ...rebuilt, id: recipient.id, remoteId: recipient.remoteId };
+    });
+    set({ recipients: next });
+    if (meta) await saveDataset({ ...meta, recordCount: next.length }, next);
+  },
+
+  removeRecipient: async (id) => {
+    const { recipients, meta, selectedIds } = get();
+    const next = recipients.filter((recipient) => recipient.id !== id);
+    const nextSelection = new Set(selectedIds);
+    nextSelection.delete(id);
+    set({ recipients: next, selectedIds: nextSelection });
+    if (meta) await saveDataset({ ...meta, recordCount: next.length }, next);
   },
 }));

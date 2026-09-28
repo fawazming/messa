@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Preserve the Authorization header for Bearer token auth (some SAPIs drop it).
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# Serve real files/directories directly (admin/, assets, etc.)
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Everything else goes to the front controller.
+RewriteRule ^ index.php [QSA,L]

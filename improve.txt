@@ -1,0 +1,6 @@
+Include the following:
+- Add a cloud feature for login before app can be accessed at messa.sgm.ng  Write all server app in /server folder all raw PHP powered (no framework) plus mysql (has featured admin dashboard)
+- Registration is via token which can be gotten by payment of NGN 5000 via whatsapp 08108097322 - RayyanTech
+- Ability to store, create, update and delete recipents data (as used in the app) on the app of up to 10 different loadable tables (table can contain as much as 512 rows) per account which is syncable using https://sheet.spacet.me/ (Read Docs for implementation)
+- Improved reflow of UI especially for device with button system navbar
+- Optimize the preview apk app for less memory consumption

@@ -3,6 +3,7 @@ import {
   Check,
   Database,
   Filter as FilterIcon,
+  Plus,
   RefreshCw,
   Search,
   X,
@@ -115,14 +116,23 @@ export default function DataScreen() {
       subtitle={meta ? `${recipients.length.toLocaleString()} records · synced ${timeAgo(meta.lastSyncedAt)}` : undefined}
       headerLarge
       right={
-        <Pressable
-          onPress={() => sync()}
-          disabled={syncing}
-          accessibilityRole="button"
-          accessibilityLabel="Refresh data"
-          style={({ pressed }) => [styles.refreshButton, pressed && styles.pressed]}>
-          <RefreshCw size={18} color={palette.indigo} />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable
+            onPress={() => router.push('/recipient-editor')}
+            accessibilityRole="button"
+            accessibilityLabel="Add recipient"
+            style={({ pressed }) => [styles.refreshButton, pressed && styles.pressed]}>
+            <Plus size={18} color={palette.indigo} />
+          </Pressable>
+          <Pressable
+            onPress={() => sync()}
+            disabled={syncing}
+            accessibilityRole="button"
+            accessibilityLabel="Refresh data"
+            style={({ pressed }) => [styles.refreshButton, pressed && styles.pressed]}>
+            <RefreshCw size={18} color={palette.indigo} />
+          </Pressable>
+        </View>
       }
       contentStyle={styles.content}>
       <View style={styles.toolbar}>
@@ -201,6 +211,7 @@ export default function DataScreen() {
             recipient={item}
             selected={selectedIds.has(item.id)}
             onToggle={toggleSelection}
+            onLongPress={(recipient) => router.push(`/recipient-editor?id=${recipient.id}`)}
           />
         )}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
@@ -254,6 +265,11 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     minHeight: 42,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
   },
   refreshButton: {
     width: 40,

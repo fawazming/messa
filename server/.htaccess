@@ -1,0 +1,9 @@
+# If the project root is exposed by mistake, block sensitive paths.
+# The intended document root is server/public.
+RewriteEngine On
+RewriteRule ^lib/ - [F,L]
+RewriteRule ^sql/ - [F,L]
+
+<FilesMatch "^(config(\.local)?\.php|seed\.php|router\.php)$">
+  Require all denied
+</FilesMatch>

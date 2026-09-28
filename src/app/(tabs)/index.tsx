@@ -22,6 +22,7 @@ import { FontSize, Radius, Spacing, palette } from '@/constants/theme';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { getSubscriptions } from '@/services/smsService';
 import { useAppStore } from '@/store/appStore';
+import { useCloudStore } from '@/store/cloudStore';
 import { useDataStore } from '@/store/dataStore';
 import { useTemplatesStore } from '@/store/templatesStore';
 import type { SimSubscription } from '@/types';
@@ -46,6 +47,8 @@ export default function HomeScreen() {
   const templateCount = useTemplatesStore((state) => state.templates.length);
   const settings = useAppStore((state) => state.settings);
   const dataSource = useAppStore((state) => state.dataSource);
+  const cloudTables = useCloudStore((state) => state.tables);
+  const activeCloudId = useCloudStore((state) => state.activeTableId);
   const { campaigns } = useCampaigns();
   const [subscriptions, setSubscriptions] = useState<SimSubscription[]>([]);
 
@@ -159,6 +162,26 @@ export default function HomeScreen() {
           accessibilityRole="button"
           style={({ pressed }) => [styles.inlineLink, pressed && styles.pressed]}>
           <Text style={styles.inlineLinkLabel}>Change SIM</Text>
+          <ArrowRight size={15} color={palette.indigo} />
+        </Pressable>
+      </Card>
+
+      <Card>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardLabel}>CLOUD</Text>
+          <Chip label={`${cloudTables.length} table${cloudTables.length === 1 ? '' : 's'}`} tone="indigo" />
+        </View>
+        <Text style={styles.cardTitle}>
+          {cloudTables.find((table) => table.id === activeCloudId)?.name ?? 'No active cloud table'}
+        </Text>
+        <Text style={styles.cardMeta}>
+          Sync recipients from up to 10 tables of 512 rows per account.
+        </Text>
+        <Pressable
+          onPress={() => router.push('/tables')}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.inlineLink, pressed && styles.pressed]}>
+          <Text style={styles.inlineLinkLabel}>Manage cloud tables</Text>
           <ArrowRight size={15} color={palette.indigo} />
         </Pressable>
       </Card>

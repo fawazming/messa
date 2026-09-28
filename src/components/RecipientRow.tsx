@@ -10,6 +10,7 @@ type RecipientRowProps = {
   recipient: Recipient;
   selected: boolean;
   onToggle: (id: string) => void;
+  onLongPress?: (recipient: Recipient) => void;
 };
 
 function detailEntries(recipient: Recipient): { label: string; value: string }[] {
@@ -20,13 +21,15 @@ function detailEntries(recipient: Recipient): { label: string; value: string }[]
     .map(([key, value]) => ({ label: key.replace(/_/g, ' '), value }));
 }
 
-function RecipientRowComponent({ recipient, selected, onToggle }: RecipientRowProps) {
+function RecipientRowComponent({ recipient, selected, onToggle, onLongPress }: RecipientRowProps) {
   const valid = isValidPhone(recipient.phone);
   const details = detailEntries(recipient);
 
   return (
     <Pressable
       onPress={() => onToggle(recipient.id)}
+      onLongPress={onLongPress ? () => onLongPress(recipient) : undefined}
+      delayLongPress={350}
       accessibilityRole="checkbox"
       accessibilityState={{ checked: selected }}
       accessibilityLabel={`${recipient.name || recipient.remoteId}, ${recipient.phone || 'no phone number'}`}

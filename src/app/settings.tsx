@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
-import { useFocusEffect } from 'expo-router';
-import { Check, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { Check, Cloud, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
@@ -16,6 +16,7 @@ import { FontSize, Radius, Spacing, palette } from '@/constants/theme';
 import { getSubscriptions } from '@/services/smsService';
 import { fetchSheetJson, discoverFields, inferFieldMap } from '@/services/sheetService';
 import { useAppStore } from '@/store/appStore';
+import { useAuthStore } from '@/store/authStore';
 import { useDataStore } from '@/store/dataStore';
 import type { SimSubscription } from '@/types';
 
@@ -26,6 +27,11 @@ type TestResult =
   | { status: 'error'; message: string };
 
 export default function SettingsScreen() {
+  const router = useRouter();
+  const authUser = useAuthStore((state) => state.user);
+  const authBaseUrl = useAuthStore((state) => state.apiBaseUrl);
+  const logout = useAuthStore((state) => state.logout);
+  const setAuthBaseUrl = useAuthStore((state) => state.setBaseUrl);
   const dataSource = useAppStore((state) => state.dataSource);
   const fieldMap = useAppStore((state) => state.fieldMap);
   const settings = useAppStore((state) => state.settings);
@@ -42,6 +48,7 @@ export default function SettingsScreen() {
   const [test, setTest] = useState<TestResult>({ status: 'idle' });
   const [subscriptions, setSubscriptions] = useState<SimSubscription[]>([]);
   const [saving, setSaving] = useState(false);
+  const [apiUrl, setApiUrl] = useState(authBaseUrl);
 
   useFocusEffect(
     useCallback(() => {
@@ -125,7 +132,39 @@ export default function SettingsScreen() {
   const version = Constants.expoConfig?.version ?? '1.0.0';
 
   return (
-    <Screen title="Settings" showBack subtitle="Data, SMS and storage">
+    <Screen title="Settings" showBack subtitle="Account, data, SMS and storage">
+      <SectionTitle title="Account" caption={authUser ? `${authUser.name} · ${authUser.email}` : 'Signed in'} />
+      <Card style={styles.card}>
+        <Button
+          label="Cloud Tables"
+          variant="secondary"
+          fullWidth
+          icon={<Cloud size={16} color={palette.text} />}
+          onPress={() => router.push('/tables')}
+        />
+        <TextField
+          label="API base URL"
+          value={apiUrl}
+          onChangeText={setApiUrl}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="url"
+          placeholder="https://messa.sgm.ng/api"
+        />
+        <View style={styles.row}>
+          <Button
+            label="Save URL"
+            size="sm"
+            variant="secondary"
+            onPress={async () => {
+              await setAuthBaseUrl(apiUrl);
+              Alert.alert('Saved', 'API base URL updated.');
+            }}
+          />
+          <Button label="Sign out" size="sm" variant="danger" onPress={() => logout()} />
+        </View>
+      </Card>
+
       <SectionTitle title="Data Source" />
       <Card style={styles.card}>
         <TextField

@@ -132,3 +132,34 @@ export type AppSettings = {
   confirmBeforeSend: boolean;
   notifyOnComplete: boolean;
 };
+
+export type AppUser = {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: 'user' | 'admin';
+  max_tables: number;
+  max_rows: number;
+  created_at?: string;
+};
+
+export type CloudTable = {
+  id: number;
+  name: string;
+  slug: string;
+  columns: string[];
+  row_count: number;
+  source_url?: string | null;
+  public_url: string;
+  created_at: string;
+  updated_at: string;
+  last_synced_at?: string | null;
+};
+
+export type CloudRow = {
+  id: number;
+  position: number;
+  data: Record<string, string>;
+  updated_at: string;
+};

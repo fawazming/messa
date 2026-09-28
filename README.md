@@ -36,6 +36,40 @@ Native Kotlin module: modules/messa-sms
 Key rule: **data and messaging intelligence live in React Native; SIM selection and direct SMS
 transmission live in a small, isolated native module.**
 
+## Cloud accounts & data tables
+
+MESSA requires a cloud account before the app can be used. The backend lives in
+[`server/`](./server/README.md) — raw **PHP + MySQL**, no framework, with an admin dashboard at
+`/admin`.
+
+- **Login gate**: the app shows sign-in/create-account until authenticated (`src/components/AuthGate.tsx`).
+- **Registration**: buyers pay **NGN 5,000** via WhatsApp **08108097322 (RayyanTech)** and receive a
+  token, then register in the app.
+- **Data tables**: each account can keep up to **10 tables** of up to **512 rows**. Tables support
+  create / read / update / delete, bulk replace, CSV export and a public
+  `sheet.spacet.me`-compatible JSON URL.
+- **Sync**: import any `sheet.spacet.me` endpoint into a table, or push the recipients currently in
+  the app up to a table. Loading a table makes it the active dataset for campaigns.
+- **Recipient CRUD**: add recipients with the **+** on the Data tab, long-press a row to edit or
+  delete. Changes are pushed to the active cloud table when one is loaded.
+
+The app points at `https://messa.sgm.ng/api` by default; change it under **Settings → Account** or
+on the sign-in screen's **Server settings**.
+
+### Server setup (summary)
+
+```bash
+cp server/.env.example server/.env      # set DB_*, APP_BASE_URL, APP_SECRET, WhatsApp, fee
+mysql -u root -e "CREATE DATABASE messa CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+php server/seed.php --schema                          # create tables
+php server/seed.php admin@messa.sgm.ng "StrongPass123" "MESSA Admin"   # first admin
+php server/seed.php --token                           # issue a registration token
+# point messa.sgm.ng document root at server/public
+# local dev: php -S localhost:8080 server/public/router.php
+```
+
+See [`server/README.md`](./server/README.md) for the full API and deployment guide.
+
 ## Project structure
 
 ```
@@ -106,6 +140,20 @@ Class: {{class}}. Regards, {{school}}.
 Supported: plain fields, `{{uppercase x}}`, `{{lowercase x}}`, `{{currency amount}}`,
 `{{date}}`, `{{date+7}}`. No arbitrary JavaScript is executed. Missing variables are detected
 during validation and those recipients are skipped.
+
+## Release build optimizations
+
+`plugins/with-release-optimizations.js` (a local Expo config plugin, no extra dependency) enables
+R8/ProGuard minification, resource shrinking and PNG crunching during prebuild. Combined with Hermes
+(SDK 57 default), windowed `FlatList` rendering and local caches (recipients ≤ 512/table), this
+keeps the preview APK lean and memory-friendly on low-to-mid-range devices.
+
+```bash
+npm run build:apk     # EAS preview profile -> installable, optimized APK
+```
+
+Optional further size cuts (require installing packages): `npx expo install expo-build-properties`
+to also enable JS bundle compression and arm-only ABIs.
 
 ## Permissions
 
