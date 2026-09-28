@@ -45,8 +45,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "9ecfd614-d25f-4557-b3fe-84c1bac18d91"
+        "projectId": "16882bad-73a5-45b5-b3e9-ed6e24c78346"
       }
-    }
+    },
+    "owner": "fawazming"
   }
 }
